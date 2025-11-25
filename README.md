@@ -122,5 +122,3 @@ No database is required; copy the processed `data/` folder into the container im
 MIT — see `LICENSE` for details.
 
 ---
-
-Built with ❤️ for drivers chasing their next tenth. 🏁
