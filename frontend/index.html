@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Replay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- SETUP PANEL -->
+        <section id="setup-panel" class="panel active">
+            <header class="hero-header">
+                <div class="logo-area">
+                    <i data-lucide="flag" class="logo-icon"></i>
+                    <p class="eyebrow">Apex Replay</p>
+                </div>
+                <h1>Multi-Lap Analysis</h1>
+                <p class="lede">
+                    Compare your laps against the golden lap to master every corner.
+                </p>
+            </header>
+
+            <div class="setup-grid">
+                <!-- STEP 1: CIRCUIT -->
+                <div class="setup-card step-1">
+                    <div class="card-header">
+                        <div class="step-badge">1</div>
+                        <h3>Circuit Selection</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="select-wrapper">
+                            <i data-lucide="map" class="select-icon"></i>
+                            <select id="circuit-select">
+                                <option value="" disabled selected>Loading circuits...</option>
+                            </select>
+                        </div>
+
+                        <div id="golden-info" class="golden-highlight hidden">
+                            <div class="golden-icon"><i data-lucide="trophy"></i></div>
+                            <div class="golden-details">
+                                <span class="label">Golden Lap Reference</span>
+                                <div class="values">
+                                    <strong id="golden-name">--</strong>
+                                    <span class="separator">•</span>
+                                    <strong id="golden-time" class="time">--:--.---</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: VEHICLE -->
+                <div class="setup-card step-2">
+                    <div class="card-header">
+                        <div class="step-badge">2</div>
+                        <h3>Select Vehicle</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="vehicle-grid" class="vehicle-grid">
+                            <div class="placeholder-state">
+                                <i data-lucide="arrow-up"></i>
+                                <span>Select a circuit first</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: LAPS -->
+                <div class="setup-card step-3">
+                    <div class="card-header">
+                        <div class="step-badge">3</div>
+                        <h3>Select Lap</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="lap-grid" class="lap-grid">
+                            <div class="placeholder-state">
+                                <span>Waiting for vehicle...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SELECTED SUMMARY -->
+                <div class="setup-card step-4 selected-summary">
+                    <div class="card-header">
+                        <h3>Session Ready</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="selected-laps" class="selected-laps-list"></div>
+                        <button id="launch-btn" class="launch-button" disabled>
+                            <span>Launch Replay</span>
+                            <i data-lucide="play-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEWER PANEL -->
+        <section id="viewer-panel" class="panel">
+            <div class="viewer-wrapper">
+                <div id="scene-container"></div>
+
+                <!-- Top HUD: Controls & Info -->
+                <div class="top-bar">
+                    <button id="btn-exit" class="icon-btn" title="Back to menu">
+                        <i data-lucide="arrow-left"></i> Back
+                    </button>
+
+                    <div class="analysis-controls">
+                        <button class="analysis-btn active" data-mode="lap">
+                            <i data-lucide="arrow-left-right"></i> Comparison
+                        </button>
+                        <button class="analysis-btn" data-mode="consistency">
+                            <i data-lucide="activity"></i> Consistency
+                        </button>
+                        <button class="analysis-btn" data-mode="flow">
+                            <i data-lucide="wind"></i> Speed Flow
+                        </button>
+                        <button class="analysis-btn" data-mode="ai_insight">
+                            <i data-lucide="brain"></i> AI Insight
+                        </button>
+                    </div>
+                    <div class="playback-controls">
+                        <button id="btn-restart" class="icon-btn"><i data-lucide="rotate-ccw"></i></button>
+                        <button id="btn-play" class="icon-btn main-play"><i data-lucide="pause"></i></button>
+                        <div class="speed-control">
+                            <i data-lucide="gauge"></i>
+                            <select id="speed-select">
+                                <option value="0.5">0.5x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="2">2x</option>
+                                <option value="4">4x</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Left HUD: Live Order -->
+                <div class="hud-left">
+                    <div class="leaderboard-card">
+                        <h5>Live Order</h5>
+                        <div id="leaderboard" class="leaderboard-list"></div>
+                    </div>
+                </div>
+
+                <!-- Right HUD: Telemetry Stack -->
+                <div class="telemetry-stack">
+                    <!-- 1. Golden Lap (Reference) -->
+                    <div class="telemetry-card golden-lap-card">
+                        <div class="card-badge"><i data-lucide="trophy"></i> GOLDEN</div>
+                        <h4 id="golden-telemetry-name">Golden Lap</h4>
+
+                        <div class="metric-row main-stat">
+                            <span class="label">Speed</span>
+                            <strong id="golden-metric-speed" class="value">0 <small>km/h</small></strong>
+                        </div>
+
+                        <div class="telemetry-bars">
+                            <div class="bar-group">
+                                <label>THR</label>
+                                <div class="bar-track">
+                                    <div id="golden-metric-throttle" class="bar-fill throttle"></div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
+                                <label>BRK</label>
+                                <div class="bar-track">
+                                    <div id="golden-metric-brake" class="bar-fill brake"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Comparison Lap (User) -->
+                    <div class="telemetry-card comparison-lap-card">
+                        <div class="card-badge user"><i data-lucide="user"></i> GHOST</div>
+                        <h4 id="user-telemetry-name">Select Lap...</h4>
+
+                        <div class="metric-row main-stat">
+                            <span class="label">Speed</span>
+                            <strong id="user-metric-speed" class="value">0 <small>km/h</small></strong>
+                        </div>
+                        <!-- Delta Indicator -->
+                        <div class="metric-row delta-stat">
+                            <span class="label">Gap</span>
+                            <strong id="metric-gap" class="value neutral">+0.00s</strong>
+                        </div>
+
+                        <div class="telemetry-bars">
+                            <div class="bar-group">
+                                <label>THR</label>
+                                <div class="bar-track">
+                                    <div id="user-metric-throttle" class="bar-fill throttle"></div>
+                                </div>
+                            </div>
+                            <div class="bar-group">
+                                <label>BRK</label>
+                                <div class="bar-track">
+                                    <div id="user-metric-brake" class="bar-fill brake"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-row secondary">
+                            <span>Distance</span>
+                            <span id="metric-distance">0 m</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

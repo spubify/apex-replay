@@ -1,0 +1,72 @@
+# ============================================
+# ----    FRONTEND (HTML / CSS / JS)      ----
+# ============================================
+
+node_modules/
+dist/
+build/
+.cache/
+.tmp/
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.DS_Store
+Thumbs.db
+
+# ============================================
+# ----            PYTHON BACKEND           ---
+# ============================================
+
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+
+*.pyo
+*.pyd
+*.pdb
+*.pkl
+*.pickle
+
+.mypy_cache/
+.pytest_cache/
+coverage/
+
+cache/
+
+# ============================================
+# ----            SYSTEM FILES             ---
+# ============================================
+
+*.swp
+*.swo
+desktop.ini
+push_datasets.sh
+
+# ============================================
+# ----           ENVIRONMENT VARS          ---
+# ============================================
+
+.env
+.env.*
+*.secret
+*.key
+
+# ============================================
+# ----         FIREBASE / GOOGLE           ---
+# ============================================
+
+.firebase/
+.firebaserc
+*service-account*.json
+
+# ============================================
+# ----         OPTIONAL FRONTEND            ---
+# ============================================
+
+*.css.map
+*.sass-cache/
